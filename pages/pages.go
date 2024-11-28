@@ -36,7 +36,7 @@ func LoadPages(wd string) error {
 			o = overlapfs.OverlapFS{A: wwwPages, B: wdFs}
 		}
 		wwwTemplates, err = template.New("pages").Funcs(template.FuncMap{
-			"emailHide": EmailHide,
+			"emailHide": utils.EmailHide,
 		}).ParseFS(o, "*.go.html")
 
 		glob, err := fs.Glob(o, "assets/*")
@@ -66,14 +66,4 @@ func RenderCss(name string) io.ReadSeeker {
 		return nil
 	}
 	return bytes.NewReader(b)
-}
-
-func EmailHide(a string) string {
-	b := []byte(a)
-	for i := range b {
-		if b[i] != '@' && b[i] != '.' {
-			b[i] = 'x'
-		}
-	}
-	return string(b)
 }
