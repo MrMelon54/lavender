@@ -8,9 +8,9 @@ import (
 	"github.com/1f349/lavender/conf"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/logger"
-	"github.com/1f349/lavender/pages"
 	"github.com/1f349/lavender/role"
 	"github.com/1f349/lavender/server"
+	"github.com/1f349/lavender/web"
 	"github.com/1f349/mjwt"
 	"github.com/charmbracelet/log"
 	"github.com/cloudflare/tableflip"
@@ -121,7 +121,7 @@ func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...interface{})
 		logger.Logger.Fatal("Failed to add initial user", "err", err)
 	}
 
-	if err := pages.LoadPages(wd); err != nil {
+	if err := web.LoadPages(wd); err != nil {
 		logger.Logger.Fatal("Failed to load page templates:", err)
 	}
 

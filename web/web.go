@@ -58,13 +58,15 @@ func RenderPageTemplate(wr io.Writer, name string, data any) {
 	}
 }
 
-func RenderWebAsset(rw http.ResponseWriter, req *http.Request) {
-	name := req.URL.Path
-
+func RenderWebAsset(rw http.ResponseWriter, req *http.Request, name string) {
 	// Disallow paths containing ".." - directory traversal is a security issue.
+	if containsDotDot(name) {
+		http.Error(rw, "400 Bad Request", http.StatusBadRequest)
+	}
+
 	// Disallow paths ending in ".html" - these should only be processed by HTML
 	// template.
-	if containsDotDot(name) || strings.HasSuffix(name, ".html") {
+	if strings.HasSuffix(name, ".html") {
 		http.Error(rw, "404 Not Found", http.StatusNotFound)
 		return
 	}

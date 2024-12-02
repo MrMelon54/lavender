@@ -7,9 +7,9 @@ import (
 	clientStore "github.com/1f349/lavender/client-store"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/logger"
-	"github.com/1f349/lavender/pages"
 	"github.com/1f349/lavender/scope"
 	"github.com/1f349/lavender/utils"
+	"github.com/1f349/lavender/web"
 	"github.com/1f349/mjwt"
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/errors"
@@ -232,7 +232,7 @@ func (h *httpServer) authorizeEndpoint(rw http.ResponseWriter, req *http.Request
 		}
 
 		rw.WriteHeader(http.StatusOK)
-		pages.RenderPageTemplate(rw, "oauth-authorize", map[string]any{
+		web.RenderPageTemplate(rw, "oauth-authorize", map[string]any{
 			"ServiceName":  h.conf.ServiceName,
 			"AppName":      appName,
 			"AppDomain":    appDomain,

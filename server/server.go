@@ -8,16 +8,14 @@ import (
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/issuer"
 	"github.com/1f349/lavender/logger"
-	"github.com/1f349/lavender/pages"
+	"github.com/1f349/lavender/web"
 	"github.com/1f349/mjwt"
 	"github.com/go-oauth2/oauth2/v4/manage"
 	"github.com/go-oauth2/oauth2/v4/server"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
-	"time"
 )
 
 var errInvalidScope = errors.New("missing required scope")
@@ -57,8 +55,6 @@ type mailLinkKey struct {
 func SetupRouter(r *httprouter.Router, config conf.Conf, db *database.Queries, signingKey *mjwt.Issuer) {
 	// remove last slash from baseUrl
 	config.BaseUrl = strings.TrimRight(config.BaseUrl, "/")
-
-	contentCache := time.Now()
 
 	authBasic := &auth.BasicLogin{DB: db}
 	authOtp := &auth.OtpLogin{DB: db}
@@ -101,8 +97,7 @@ func SetupRouter(r *httprouter.Router, config conf.Conf, db *database.Queries, s
 			http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		out := pages.RenderCss(path.Join("assets", name))
-		http.ServeContent(rw, req, path.Base(name), contentCache, out)
+		web.RenderWebAsset(rw, req, name)
 	})
 
 	// login steps

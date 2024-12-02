@@ -5,7 +5,7 @@ import (
 	auth2 "github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/lists"
-	"github.com/1f349/lavender/pages"
+	"github.com/1f349/lavender/web"
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -35,7 +35,7 @@ func (h *httpServer) EditGet(rw http.ResponseWriter, req *http.Request, _ httpro
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	pages.RenderPageTemplate(rw, "edit", map[string]any{
+	web.RenderPageTemplate(rw, "edit", map[string]any{
 		"ServiceName":  h.conf.ServiceName,
 		"User":         user,
 		"Nonce":        lNonce,

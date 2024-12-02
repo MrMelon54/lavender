@@ -3,8 +3,8 @@ package server
 import (
 	auth2 "github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
-	"github.com/1f349/lavender/pages"
 	"github.com/1f349/lavender/role"
+	"github.com/1f349/lavender/web"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/sync/errgroup"
 	"net/http"
@@ -51,7 +51,7 @@ func (h *httpServer) ManageUsersGet(rw http.ResponseWriter, req *http.Request, _
 				m["EditUser"] = i
 				rw.Header().Set("Content-Type", "text/html")
 				rw.WriteHeader(http.StatusOK)
-				pages.RenderPageTemplate(rw, "manage-users-edit", m)
+				web.RenderPageTemplate(rw, "manage-users-edit", m)
 				return
 			}
 		}
@@ -61,7 +61,7 @@ func (h *httpServer) ManageUsersGet(rw http.ResponseWriter, req *http.Request, _
 
 	rw.Header().Set("Content-Type", "text/html")
 	rw.WriteHeader(http.StatusOK)
-	pages.RenderPageTemplate(rw, "manage-users", m)
+	web.RenderPageTemplate(rw, "manage-users", m)
 }
 
 func (h *httpServer) ManageUsersPost(rw http.ResponseWriter, req *http.Request, _ httprouter.Params, auth auth2.UserAuth) {

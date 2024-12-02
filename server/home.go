@@ -3,8 +3,8 @@ package server
 import (
 	auth2 "github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
-	"github.com/1f349/lavender/pages"
 	"github.com/1f349/lavender/role"
+	"github.com/1f349/lavender/web"
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -24,7 +24,7 @@ func (h *httpServer) Home(rw http.ResponseWriter, req *http.Request, _ httproute
 	})
 
 	if auth.IsGuest() {
-		pages.RenderPageTemplate(rw, "index-guest", map[string]any{
+		web.RenderPageTemplate(rw, "index-guest", map[string]any{
 			"ServiceName": h.conf.ServiceName,
 		})
 		return
@@ -37,7 +37,7 @@ func (h *httpServer) Home(rw http.ResponseWriter, req *http.Request, _ httproute
 		return nil
 	})
 
-	pages.RenderPageTemplate(rw, "index", map[string]any{
+	web.RenderPageTemplate(rw, "index", map[string]any{
 		"ServiceName": h.conf.ServiceName,
 		"Auth":        auth,
 		"Nonce":       lNonce,

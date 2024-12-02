@@ -10,7 +10,7 @@ import (
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/database/types"
 	"github.com/1f349/lavender/issuer"
-	"github.com/1f349/lavender/pages"
+	"github.com/1f349/lavender/web"
 	"github.com/1f349/mjwt"
 	"github.com/1f349/mjwt/auth"
 	"github.com/golang-jwt/jwt/v4"
@@ -78,7 +78,7 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 
 		fmt.Printf("%#v\n", h.testAuthSources(req, userPtr, auth2.FactorFirst))
 
-		pages.RenderPageTemplate(rw, "login-memory", map[string]any{
+		web.RenderPageTemplate(rw, "login-memory", map[string]any{
 			"ServiceName": h.conf.ServiceName,
 			"LoginName":   cookie.Value,
 			"Redirect":    req.URL.Query().Get("redirect"),
@@ -89,7 +89,7 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 	}
 
 	// render different page sources
-	pages.RenderPageTemplate(rw, "login", map[string]any{
+	web.RenderPageTemplate(rw, "login", map[string]any{
 		"ServiceName": h.conf.ServiceName,
 		"LoginName":   "",
 		"Redirect":    req.URL.Query().Get("redirect"),

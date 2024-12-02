@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/1f349/lavender/database"
-	"github.com/1f349/lavender/pages"
+	"github.com/1f349/lavender/web"
 	"github.com/emersion/go-message/mail"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -39,7 +39,7 @@ func (h *httpServer) MailPassword(rw http.ResponseWriter, _ *http.Request, param
 		return
 	}
 
-	pages.RenderPageTemplate(rw, "reset-password", map[string]any{
+	web.RenderPageTemplate(rw, "reset-password", map[string]any{
 		"ServiceName": h.conf.ServiceName,
 		"Code":        code,
 	})

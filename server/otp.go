@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	auth2 "github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
-	"github.com/1f349/lavender/pages"
+	"github.com/1f349/lavender/web"
 	"github.com/julienschmidt/httprouter"
 	"github.com/skip2/go-qrcode"
 	"github.com/xlzd/gotp"
@@ -19,7 +19,7 @@ func (h *httpServer) editOtpPost(rw http.ResponseWriter, req *http.Request, _ ht
 	if req.Method == http.MethodPost && req.FormValue("remove") == "1" {
 		if !req.Form.Has("code") {
 			// render page
-			pages.RenderPageTemplate(rw, "remove-otp", map[string]any{
+			web.RenderPageTemplate(rw, "remove-otp", map[string]any{
 				"ServiceName": h.conf.ServiceName,
 			})
 			return
@@ -95,7 +95,7 @@ func (h *httpServer) editOtpPost(rw http.ResponseWriter, req *http.Request, _ ht
 		}
 
 		// render page
-		pages.RenderPageTemplate(rw, "edit-otp", map[string]any{
+		web.RenderPageTemplate(rw, "edit-otp", map[string]any{
 			"ServiceName": h.conf.ServiceName,
 			"OtpQr":       template.URL("data:qrImg/png;base64," + base64.StdEncoding.EncodeToString(qrBuf.Bytes())),
 			"QrWidth":     qrWidth,
