@@ -32,7 +32,7 @@ func (o OAuthLogin) Init() {
 	o.flow = cache.New[string, flowStateData]()
 }
 
-func (o OAuthLogin) Factor() Factor { return FactorFirst }
+func (o OAuthLogin) Factor() Factor { return FactorBasic }
 
 func (o OAuthLogin) Name() string { return "oauth" }
 

@@ -5,16 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"github.com/1f349/lavender/database"
+	"html/template"
 	"net/http"
 )
 
 type Factor byte
 
 const (
-	// FactorAuthorized defines the "authorized" state of a session
-	FactorAuthorized Factor = iota
-	FactorFirst
-	FactorSecond
+	// FactorUnauthorized defines the "unauthorized" state of a session
+	FactorUnauthorized Factor = iota
+	FactorBasic
+	FactorExtended
+	FactorSudo
 )
 
 type Provider interface {
@@ -25,18 +27,20 @@ type Provider interface {
 	// Name defines a string value for the provider, useful for template switching
 	Name() string
 
-	// RenderData stores values to send to the templating function
-	RenderData(ctx context.Context, req *http.Request, user *database.User, data map[string]any) error
+	// RenderTemplate returns HTML to embed in the page template
+	RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error)
 
 	// AttemptLogin processes the login request
 	AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error
 }
 
 var (
-	// ErrRequiresSecondFactor notifies the ServeHTTP function to ask for another factor
-	ErrRequiresSecondFactor = errors.New("requires second factor")
-	// ErrRequiresPreviousFactor is a generic error for providers which require a previous factor
-	ErrRequiresPreviousFactor = errors.New("requires previous factor")
+	// ErrRequiresBasicFactor notifies the ServeHTTP function to ask for another factor
+	ErrRequiresBasicFactor = errors.New("requires basic factor")
+	// ErrRequiresExtendedFactor is a generic error for providers which require a previous factor
+	ErrRequiresExtendedFactor = errors.New("requires extended factor")
+
+	ErrRequiresSudoFactor = errors.New("requires sudo factor")
 	// ErrUserDoesNotSupportFactor is a generic error for providers with are unable to support the user
 	ErrUserDoesNotSupportFactor = errors.New("user does not support factor")
 )

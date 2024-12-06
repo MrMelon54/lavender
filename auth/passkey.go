@@ -16,7 +16,7 @@ type PasskeyLogin struct {
 	DB passkeyLoginDB
 }
 
-func (p *PasskeyLogin) Factor() Factor { return FactorFirst }
+func (p *PasskeyLogin) Factor() Factor { return FactorBasic }
 
 func (p *PasskeyLogin) Name() string { return "passkey" }
 

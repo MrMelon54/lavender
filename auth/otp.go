@@ -23,7 +23,7 @@ type OtpLogin struct {
 	DB otpLoginDB
 }
 
-func (o *OtpLogin) Factor() Factor { return FactorSecond }
+func (o *OtpLogin) Factor() Factor { return FactorExtended }
 
 func (o *OtpLogin) Name() string { return "basic" }
 

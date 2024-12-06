@@ -19,7 +19,7 @@ type BasicLogin struct {
 	DB basicLoginDB
 }
 
-func (b *BasicLogin) Factor() Factor { return FactorFirst }
+func (b *BasicLogin) Factor() Factor { return FactorBasic }
 
 func (b *BasicLogin) Name() string { return "basic" }
 

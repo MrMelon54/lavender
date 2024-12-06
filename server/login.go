@@ -49,7 +49,7 @@ func (h *httpServer) testAuthSources(req *http.Request, user *database.User, fac
 		if i.Factor()&factor == 0 {
 			continue
 		}
-		err := i.RenderData(req.Context(), req, user, data)
+		err := i.RenderTemplate(req.Context(), req, user, data)
 		authSource[i.Name()] = err == nil
 		clear(data)
 	}
@@ -76,14 +76,14 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 			return
 		}
 
-		fmt.Printf("%#v\n", h.testAuthSources(req, userPtr, auth2.FactorFirst))
+		fmt.Printf("%#v\n", h.testAuthSources(req, userPtr, auth2.FactorBasic))
 
 		web.RenderPageTemplate(rw, "login-memory", map[string]any{
 			"ServiceName": h.conf.ServiceName,
 			"LoginName":   cookie.Value,
 			"Redirect":    req.URL.Query().Get("redirect"),
 			"Source":      "start",
-			"Auth":        h.testAuthSources(req, userPtr, auth2.FactorFirst),
+			"Auth":        h.testAuthSources(req, userPtr, auth2.FactorBasic),
 		})
 		return
 	}
@@ -94,7 +94,7 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 		"LoginName":   "",
 		"Redirect":    req.URL.Query().Get("redirect"),
 		"Source":      "start",
-		"Auth":        h.testAuthSources(req, nil, auth2.FactorFirst),
+		"Auth":        h.testAuthSources(req, nil, auth2.FactorBasic),
 	})
 }
 
