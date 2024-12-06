@@ -9,41 +9,44 @@ import (
 	"net/http"
 )
 
-type Factor byte
+// State defines the currently reached authentication state
+type State byte
 
 const (
-	// FactorUnauthorized defines the "unauthorized" state of a session
-	FactorUnauthorized Factor = iota
-	FactorBasic
-	FactorExtended
-	FactorSudo
+	// StateUnauthorized defines the "unauthorized" state of a session
+	StateUnauthorized State = iota
+	// StateBasic defines the "username and password with no OTP" user state
+	// This is skipped if OTP/passkey is optional and not enabled for the user
+	StateBasic
+	// StateExtended defines the "logged in" user state
+	StateExtended
+	// StateSudo defines the "sudo" user state
+	// This state is temporary and has a configurable duration
+	StateSudo
 )
 
-type Provider interface {
-	// Factor defines the factors potentially supported by the provider
-	// Some factors might be unavailable due to user preference
-	Factor() Factor
-
-	// Name defines a string value for the provider, useful for template switching
-	Name() string
-
-	// RenderTemplate returns HTML to embed in the page template
-	RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error)
-
-	// AttemptLogin processes the login request
-	AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error
+func IsLoggedIn(s State) bool {
+	return s >= StateExtended
 }
 
-var (
-	// ErrRequiresBasicFactor notifies the ServeHTTP function to ask for another factor
-	ErrRequiresBasicFactor = errors.New("requires basic factor")
-	// ErrRequiresExtendedFactor is a generic error for providers which require a previous factor
-	ErrRequiresExtendedFactor = errors.New("requires extended factor")
+func IsSudoAvailable(s State) bool {
+	return s == StateSudo
+}
 
-	ErrRequiresSudoFactor = errors.New("requires sudo factor")
-	// ErrUserDoesNotSupportFactor is a generic error for providers with are unable to support the user
-	ErrUserDoesNotSupportFactor = errors.New("user does not support factor")
-)
+type Provider interface {
+	// AccessState defines the state at which the provider is allowed to show.
+	// Some factors might be unavailable due to user preference.
+	AccessState() State
+
+	// Name defines a string value for the provider.
+	Name() string
+
+	// RenderTemplate returns HTML to embed in the page template.
+	RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error)
+
+	// AttemptLogin processes the login request.
+	AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error
+}
 
 type UserSafeError struct {
 	Display  string
@@ -86,18 +89,15 @@ func (e RedirectError) Error() string {
 	return fmt.Sprintf("redirect to '%s'", e.Target)
 }
 
-type lookupUserDB interface {
+type LookupUserDB interface {
 	GetUser(ctx context.Context, subject string) (database.User, error)
 }
 
-func lookupUser(ctx context.Context, db lookupUserDB, subject string, resolvesTwoFactor bool, user *database.User) error {
+func LookupUser(ctx context.Context, db LookupUserDB, subject string, user *database.User) error {
 	getUser, err := db.GetUser(ctx, subject)
 	if err != nil {
 		return err
 	}
 	*user = getUser
-	if user.NeedFactor && !resolvesTwoFactor {
-		return ErrRequiresSecondFactor
-	}
 	return nil
 }

@@ -11,7 +11,7 @@ type UserHandler func(rw http.ResponseWriter, req *http.Request, params httprout
 
 type UserAuth struct {
 	Subject  string
-	Factor   Factor
+	Factor   State
 	UserInfo UserInfoFields
 }
 

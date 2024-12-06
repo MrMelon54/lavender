@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	auth2 "github.com/1f349/lavender/auth"
+	"github.com/1f349/lavender/auth/providers"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/database/types"
 	"github.com/1f349/lavender/issuer"
@@ -41,12 +42,12 @@ func getUserLoginName(req *http.Request) string {
 	return originUrl.Query().Get("login_name")
 }
 
-func (h *httpServer) testAuthSources(req *http.Request, user *database.User, factor auth2.Factor) map[string]bool {
+func (h *httpServer) testAuthSources(req *http.Request, user *database.User, factor auth2.State) map[string]bool {
 	authSource := make(map[string]bool)
 	data := make(map[string]any)
 	for _, i := range h.authSources {
 		// ignore not-supported factors
-		if i.Factor()&factor == 0 {
+		if i.State()&factor == 0 {
 			continue
 		}
 		err := i.RenderTemplate(req.Context(), req, user, data)
@@ -137,7 +138,7 @@ func (h *httpServer) loginPost(rw http.ResponseWriter, req *http.Request, _ http
 	// the @ must exist if the service is defined
 	loginUn := loginName[:n]
 
-	ctx := auth2.WithWellKnown(req.Context(), login)
+	ctx := providers.WithWellKnown(req.Context(), login)
 	ctx = context.WithValue(ctx, "login_username", loginUn)
 	ctx = context.WithValue(ctx, "login_full", loginName)
 
@@ -311,7 +312,7 @@ const oneWeek = 7 * 24 * time.Hour
 
 type lavenderLoginAccess struct {
 	UserInfo auth2.UserInfoFields `json:"user_info"`
-	Factor   auth2.Factor         `json:"factor"`
+	Factor   auth2.State          `json:"factor"`
 	auth.AccessTokenClaims
 }
 

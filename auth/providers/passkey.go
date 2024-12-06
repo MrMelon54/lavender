@@ -1,22 +1,23 @@
-package auth
+package providers
 
 import (
 	"context"
+	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
 	"net/http"
 )
 
 type passkeyLoginDB interface {
-	lookupUserDB
+	auth.lookupUserDB
 }
 
-var _ Provider = (*PasskeyLogin)(nil)
+var _ auth.Provider = (*PasskeyLogin)(nil)
 
 type PasskeyLogin struct {
 	DB passkeyLoginDB
 }
 
-func (p *PasskeyLogin) Factor() Factor { return FactorBasic }
+func (p *PasskeyLogin) Factor() auth.State { return FactorBasic }
 
 func (p *PasskeyLogin) Name() string { return "passkey" }
 
@@ -25,7 +26,7 @@ func (p *PasskeyLogin) RenderData(ctx context.Context, req *http.Request, user *
 		return ErrRequiresPreviousFactor
 	}
 	if user.OtpSecret == "" {
-		return ErrUserDoesNotSupportFactor
+		return auth.ErrUserDoesNotSupportFactor
 	}
 
 	//TODO implement me

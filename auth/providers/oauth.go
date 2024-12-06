@@ -1,9 +1,10 @@
-package auth
+package providers
 
 import (
 	"context"
 	"fmt"
 	"github.com/1f349/cache"
+	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/issuer"
 	"github.com/google/uuid"
@@ -18,7 +19,7 @@ type flowStateData struct {
 	redirect  string
 }
 
-var _ Provider = (*OAuthLogin)(nil)
+var _ auth.Provider = (*OAuthLogin)(nil)
 
 type OAuthLogin struct {
 	DB *database.Queries
@@ -32,7 +33,7 @@ func (o OAuthLogin) Init() {
 	o.flow = cache.New[string, flowStateData]()
 }
 
-func (o OAuthLogin) Factor() Factor { return FactorBasic }
+func (o OAuthLogin) Factor() auth.State { return FactorBasic }
 
 func (o OAuthLogin) Name() string { return "oauth" }
 
@@ -58,10 +59,10 @@ func (o OAuthLogin) AttemptLogin(ctx context.Context, req *http.Request, user *d
 	oa2conf.RedirectURL = o.BaseUrl + "/callback"
 	nextUrl := oa2conf.AuthCodeURL(state, oauth2.SetAuthURLParam("login_name", loginUn))
 
-	return RedirectError{Target: nextUrl, Code: http.StatusFound}
+	return auth.RedirectError{Target: nextUrl, Code: http.StatusFound}
 }
 
-func (o OAuthLogin) OAuthCallback(rw http.ResponseWriter, req *http.Request, info func(req *http.Request, sso *issuer.WellKnownOIDC, token *oauth2.Token) (UserAuth, error), cookie func(rw http.ResponseWriter, authData UserAuth, loginName string) bool, redirect func(rw http.ResponseWriter, req *http.Request)) {
+func (o OAuthLogin) OAuthCallback(rw http.ResponseWriter, req *http.Request, info func(req *http.Request, sso *issuer.WellKnownOIDC, token *oauth2.Token) (auth.UserAuth, error), cookie func(rw http.ResponseWriter, authData auth.UserAuth, loginName string) bool, redirect func(rw http.ResponseWriter, req *http.Request)) {
 	flowState, ok := o.flow.Get(req.FormValue("state"))
 	if !ok {
 		http.Error(rw, "Invalid flow state", http.StatusBadRequest)

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/1f349/cache"
 	"github.com/1f349/lavender/auth"
+	"github.com/1f349/lavender/auth/providers"
 	"github.com/1f349/lavender/conf"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/issuer"
@@ -32,9 +33,9 @@ type httpServer struct {
 	// mailLinkCache contains a mapping of verify uuids to user uuids
 	mailLinkCache *cache.Cache[mailLinkKey, string]
 
-	authBasic *auth.BasicLogin
-	authOtp   *auth.OtpLogin
-	authOAuth *auth.OAuthLogin
+	authBasic *providers.BasicLogin
+	authOtp   *providers.OtpLogin
+	authOAuth *providers.OAuthLogin
 
 	authSources []auth.Provider
 }
@@ -56,9 +57,9 @@ func SetupRouter(r *httprouter.Router, config conf.Conf, db *database.Queries, s
 	// remove last slash from baseUrl
 	config.BaseUrl = strings.TrimRight(config.BaseUrl, "/")
 
-	authBasic := &auth.BasicLogin{DB: db}
-	authOtp := &auth.OtpLogin{DB: db}
-	authOAuth := &auth.OAuthLogin{DB: db, BaseUrl: config.BaseUrl}
+	authBasic := &providers.BasicLogin{DB: db}
+	authOtp := &providers.OtpLogin{DB: db}
+	authOAuth := &providers.OAuthLogin{DB: db, BaseUrl: config.BaseUrl}
 	authOAuth.Init()
 
 	hs := &httpServer{

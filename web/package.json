@@ -2,6 +2,7 @@
   "name": "lavender-web",
   "type": "module",
   "license": "GPL-3.0-or-later",
+  "private": true,
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",

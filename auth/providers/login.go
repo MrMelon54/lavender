@@ -1,25 +1,26 @@
-package auth
+package providers
 
 import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
 	"net/http"
 )
 
 type basicLoginDB interface {
-	lookupUserDB
+	auth.LookupUserDB
 	CheckLogin(ctx context.Context, un, pw string) (database.CheckLoginResult, error)
 }
 
-var _ Provider = (*BasicLogin)(nil)
+var _ auth.Provider = (*BasicLogin)(nil)
 
 type BasicLogin struct {
 	DB basicLoginDB
 }
 
-func (b *BasicLogin) Factor() Factor { return FactorBasic }
+func (b *BasicLogin) Factor() auth.State { return FactorBasic }
 
 func (b *BasicLogin) Name() string { return "basic" }
 
@@ -32,15 +33,15 @@ func (b *BasicLogin) AttemptLogin(ctx context.Context, req *http.Request, user *
 	un := req.FormValue("username")
 	pw := req.FormValue("password")
 	if len(pw) < 8 {
-		return BasicUserSafeError(http.StatusBadRequest, "Password too short")
+		return auth.BasicUserSafeError(http.StatusBadRequest, "Password too short")
 	}
 
 	login, err := b.DB.CheckLogin(ctx, un, pw)
 	switch {
 	case err == nil:
-		return lookupUser(ctx, b.DB, login.Subject, false, user)
+		return auth.lookupUser(ctx, b.DB, login.Subject, false, user)
 	case errors.Is(err, sql.ErrNoRows):
-		return BasicUserSafeError(http.StatusForbidden, "Username or password is invalid")
+		return auth.BasicUserSafeError(http.StatusForbidden, "Username or password is invalid")
 	default:
 		return err
 	}

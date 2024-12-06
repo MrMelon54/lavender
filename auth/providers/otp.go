@@ -1,8 +1,9 @@
-package auth
+package providers
 
 import (
 	"context"
 	"errors"
+	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
 	"github.com/xlzd/gotp"
 	"net/http"
@@ -17,13 +18,13 @@ type otpLoginDB interface {
 	GetOtp(ctx context.Context, subject string) (database.GetOtpRow, error)
 }
 
-var _ Provider = (*OtpLogin)(nil)
+var _ auth.Provider = (*OtpLogin)(nil)
 
 type OtpLogin struct {
 	DB otpLoginDB
 }
 
-func (o *OtpLogin) Factor() Factor { return FactorExtended }
+func (o *OtpLogin) Factor() auth.State { return FactorExtended }
 
 func (o *OtpLogin) Name() string { return "basic" }
 
@@ -32,7 +33,7 @@ func (o *OtpLogin) RenderData(_ context.Context, _ *http.Request, user *database
 		return ErrRequiresPreviousFactor
 	}
 	if user.OtpSecret == "" || !isDigitsSupported(user.OtpDigits) {
-		return ErrUserDoesNotSupportFactor
+		return auth.ErrUserDoesNotSupportFactor
 	}
 
 	// no need to provide render data
@@ -44,13 +45,13 @@ func (o *OtpLogin) AttemptLogin(ctx context.Context, req *http.Request, user *da
 		return ErrRequiresPreviousFactor
 	}
 	if user.OtpSecret == "" || !isDigitsSupported(user.OtpDigits) {
-		return ErrUserDoesNotSupportFactor
+		return auth.ErrUserDoesNotSupportFactor
 	}
 
 	code := req.FormValue("code")
 
 	if !validateTotp(user.OtpSecret, int(user.OtpDigits), code) {
-		return BasicUserSafeError(http.StatusBadRequest, "invalid OTP code")
+		return auth.BasicUserSafeError(http.StatusBadRequest, "invalid OTP code")
 	}
 	return nil
 }
