@@ -1,0 +1,24 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  [[ if eq .Mismatch "1" ]]
+  <p>Invalid username or password</p>
+  [[ else if eq .Mismatch "2" ]]
+  <p>Check your inbox for a verification email</p>
+  [[ end ]]
+  [[ .AuthTemplate ]]
+  [[ if gt (len .AuthButtons) 0 ]]
+  <div class="auth-buttons">
+    [[ $authButton := range .AuthButtons ]]
+    [[ . ]]
+    [[ end ]]
+  </div>
+  [[ end ]]
+  <!--
+  <div style="display: none;">
+    <button id="start-passkey-auth">Sign in with a passkey</button>
+  </div>
+  -->
+</Layout>
