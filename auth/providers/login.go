@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
+	"html/template"
 	"net/http"
 )
 
@@ -20,13 +22,13 @@ type BasicLogin struct {
 	DB basicLoginDB
 }
 
-func (b *BasicLogin) Factor() auth.State { return FactorBasic }
+func (b *BasicLogin) AccessState() auth.State { return auth.StateUnauthorized }
 
 func (b *BasicLogin) Name() string { return "basic" }
 
-func (b *BasicLogin) RenderData(ctx context.Context, req *http.Request, user *database.User, data map[string]any) error {
-	data["username"] = req.FormValue("username")
-	return nil
+func (b *BasicLogin) RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error) {
+	// TODO(melon): rewrite this
+	return template.HTML(fmt.Sprintf("<div>%s</div>", req.FormValue("username"))), nil
 }
 
 func (b *BasicLogin) AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error {
@@ -39,7 +41,7 @@ func (b *BasicLogin) AttemptLogin(ctx context.Context, req *http.Request, user *
 	login, err := b.DB.CheckLogin(ctx, un, pw)
 	switch {
 	case err == nil:
-		return auth.lookupUser(ctx, b.DB, login.Subject, false, user)
+		return auth.LookupUser(ctx, b.DB, login.Subject, user)
 	case errors.Is(err, sql.ErrNoRows):
 		return auth.BasicUserSafeError(http.StatusForbidden, "Username or password is invalid")
 	default:

@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -45,14 +46,20 @@ func LoadPages(wd string) error {
 
 		pageTemplates, err = template.New("web").Delims("[[", "]]").Funcs(template.FuncMap{
 			"emailHide": utils.EmailHide,
-		}).ParseFS(webCombinedDir, "*.html")
+			"renderTitle":
+		}).ParseFS(webCombinedDir, "*/index.html")
 
 		return err
 	})
 }
 
+func renderTitle(title string, service string) string {
+	
+}
+
 func RenderPageTemplate(wr io.Writer, name string, data any) {
-	err := pageTemplates.ExecuteTemplate(wr, name+".html", data)
+	p := path.Join(name, "index.html")
+	err := pageTemplates.ExecuteTemplate(wr, p, data)
 	if err != nil {
 		logger.Logger.Warn("Failed to render page", "name", name, "err", err)
 	}

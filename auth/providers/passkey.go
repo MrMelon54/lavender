@@ -2,13 +2,15 @@ package providers
 
 import (
 	"context"
+	"fmt"
 	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
+	"html/template"
 	"net/http"
 )
 
 type passkeyLoginDB interface {
-	auth.lookupUserDB
+	auth.LookupUserDB
 }
 
 var _ auth.Provider = (*PasskeyLogin)(nil)
@@ -17,19 +19,18 @@ type PasskeyLogin struct {
 	DB passkeyLoginDB
 }
 
-func (p *PasskeyLogin) Factor() auth.State { return FactorBasic }
+func (p *PasskeyLogin) AccessState() auth.State { return auth.StateUnauthorized }
 
 func (p *PasskeyLogin) Name() string { return "passkey" }
 
-func (p *PasskeyLogin) RenderData(ctx context.Context, req *http.Request, user *database.User, data map[string]any) error {
+func (p *PasskeyLogin) RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error) {
 	if user == nil || user.Subject == "" {
-		return ErrRequiresPreviousFactor
+		return "", fmt.Errorf("requires previous factor")
 	}
 	if user.OtpSecret == "" {
-		return auth.ErrUserDoesNotSupportFactor
+		return "", fmt.Errorf("user does not support factor")
 	}
 
-	//TODO implement me
 	panic("implement me")
 }
 
@@ -41,7 +42,7 @@ func init() {
 
 func (p *PasskeyLogin) AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error {
 	if user.Subject == "" && !passkeyShortcut {
-		return ErrRequiresPreviousFactor
+		return fmt.Errorf("requires previous factor")
 	}
 
 	//TODO implement me

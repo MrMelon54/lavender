@@ -47,10 +47,11 @@ func (h *httpServer) testAuthSources(req *http.Request, user *database.User, fac
 	data := make(map[string]any)
 	for _, i := range h.authSources {
 		// ignore not-supported factors
-		if i.State()&factor == 0 {
+		if i.AccessState() != factor {
 			continue
 		}
-		err := i.RenderTemplate(req.Context(), req, user, data)
+		page, err := i.RenderTemplate(req.Context(), req, user)
+		_ = page
 		authSource[i.Name()] = err == nil
 		clear(data)
 	}
@@ -77,14 +78,14 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 			return
 		}
 
-		fmt.Printf("%#v\n", h.testAuthSources(req, userPtr, auth2.FactorBasic))
+		fmt.Printf("%#v\n", h.testAuthSources(req, userPtr, auth2.StateBasic))
 
 		web.RenderPageTemplate(rw, "login-memory", map[string]any{
 			"ServiceName": h.conf.ServiceName,
 			"LoginName":   cookie.Value,
 			"Redirect":    req.URL.Query().Get("redirect"),
 			"Source":      "start",
-			"Auth":        h.testAuthSources(req, userPtr, auth2.FactorBasic),
+			"Auth":        h.testAuthSources(req, userPtr, auth2.StateBasic),
 		})
 		return
 	}
@@ -95,7 +96,7 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 		"LoginName":   "",
 		"Redirect":    req.URL.Query().Get("redirect"),
 		"Source":      "start",
-		"Auth":        h.testAuthSources(req, nil, auth2.FactorBasic),
+		"Auth":        h.testAuthSources(req, nil, auth2.StateBasic),
 	})
 }
 
@@ -207,7 +208,7 @@ func (h *httpServer) updateExternalUserInfo(req *http.Request, sso *issuer.WellK
 		})
 		return auth2.UserAuth{
 			Subject:  userSubject,
-			Factor:   auth2.FactorAuthorized,
+			Factor:   auth2.StateExtended,
 			UserInfo: sessionData.UserInfo,
 		}, err
 	case errors.Is(err, sql.ErrNoRows):
@@ -263,7 +264,7 @@ func (h *httpServer) updateExternalUserInfo(req *http.Request, sso *issuer.WellK
 	// TODO(melon): this feels bad
 	sessionData = auth2.UserAuth{
 		Subject:  userSubject,
-		Factor:   auth2.FactorAuthorized,
+		Factor:   auth2.StateExtended,
 		UserInfo: sessionData.UserInfo,
 	}
 
@@ -453,7 +454,7 @@ func (h *httpServer) fetchUserInfo(sso *issuer.WellKnownOIDC, token *oauth2.Toke
 
 	return auth2.UserAuth{
 		Subject:  subject,
-		Factor:   auth2.FactorAuthorized,
+		Factor:   auth2.StateExtended,
 		UserInfo: userInfoJson,
 	}, nil
 }

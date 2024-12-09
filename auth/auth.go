@@ -25,13 +25,9 @@ const (
 	StateSudo
 )
 
-func IsLoggedIn(s State) bool {
-	return s >= StateExtended
-}
+func (s State) IsLoggedIn() bool { return s >= StateExtended }
 
-func IsSudoAvailable(s State) bool {
-	return s == StateSudo
-}
+func (s State) IsSudoAvailable() bool { return s == StateSudo }
 
 type Provider interface {
 	// AccessState defines the state at which the provider is allowed to show.

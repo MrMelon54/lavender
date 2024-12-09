@@ -22,7 +22,7 @@ func (u UserAuth) NextFlowUrl(origin *url.URL) *url.URL {
 	if origin.Path == "/login" || origin.Path == "/callback" {
 		return nil
 	}
-	if u.Factor < FactorAuthorized {
+	if !u.Factor.IsLoggedIn() {
 		return PrepareRedirectUrl("/login", origin)
 	}
 	return nil

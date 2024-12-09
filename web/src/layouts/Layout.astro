@@ -1,5 +1,7 @@
 ---
 import Header from "../components/Header.astro";
+
+const {title} = Astro.props;
 ---
 
 <html lang="en">
@@ -9,7 +11,7 @@ import Header from "../components/Header.astro";
   <meta name="viewport" content="width=device-width"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
   <meta name="generator" content={Astro.generator}/>
-  <title>[[.ServiceName]]</title>
+  <title>[[ renderTitle "{title}" .ServiceName ]]</title>
 </head>
 <body>
 <Header/>
@@ -34,6 +36,16 @@ import Header from "../components/Header.astro";
   html {
     font-family: system-ui, sans-serif;
     background: #13151a;
+  }
+
+  main {
+    margin: auto;
+    padding: 1rem;
+    width: 800px;
+    max-width: calc(100% - 2rem);
+    color: white;
+    font-size: 20px;
+    line-height: 1.6;
   }
 
   code {

@@ -9,6 +9,7 @@ import (
 	"github.com/1f349/lavender/issuer"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
+	"html/template"
 	"net/http"
 	"time"
 )
@@ -33,13 +34,12 @@ func (o OAuthLogin) Init() {
 	o.flow = cache.New[string, flowStateData]()
 }
 
-func (o OAuthLogin) Factor() auth.State { return FactorBasic }
+func (o OAuthLogin) AccessState() auth.State { return auth.StateUnauthorized }
 
 func (o OAuthLogin) Name() string { return "oauth" }
 
-func (o OAuthLogin) RenderData(ctx context.Context, req *http.Request, user *database.User, data map[string]any) error {
-	//TODO implement me
-	panic("implement me")
+func (o OAuthLogin) RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error) {
+	return "<div>OAuth Login Template</div>", nil
 }
 
 func (o OAuthLogin) AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error {

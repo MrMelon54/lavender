@@ -3,9 +3,11 @@ package providers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/1f349/lavender/auth"
 	"github.com/1f349/lavender/database"
 	"github.com/xlzd/gotp"
+	"html/template"
 	"net/http"
 	"time"
 )
@@ -24,28 +26,28 @@ type OtpLogin struct {
 	DB otpLoginDB
 }
 
-func (o *OtpLogin) Factor() auth.State { return FactorExtended }
+func (o *OtpLogin) AccessState() auth.State { return auth.StateBasic }
 
 func (o *OtpLogin) Name() string { return "basic" }
 
-func (o *OtpLogin) RenderData(_ context.Context, _ *http.Request, user *database.User, data map[string]any) error {
+func (o *OtpLogin) RenderTemplate(_ context.Context, _ *http.Request, user *database.User) (template.HTML, error) {
 	if user == nil || user.Subject == "" {
-		return ErrRequiresPreviousFactor
+		return "", fmt.Errorf("requires previous factor")
 	}
 	if user.OtpSecret == "" || !isDigitsSupported(user.OtpDigits) {
-		return auth.ErrUserDoesNotSupportFactor
+		return "", fmt.Errorf("user does not support factor")
 	}
 
 	// no need to provide render data
-	return nil
+	return "<div>OTP login template</div>", nil
 }
 
 func (o *OtpLogin) AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error {
 	if user == nil || user.Subject == "" {
-		return ErrRequiresPreviousFactor
+		return fmt.Errorf("requires previous factor")
 	}
 	if user.OtpSecret == "" || !isDigitsSupported(user.OtpDigits) {
-		return auth.ErrUserDoesNotSupportFactor
+		return fmt.Errorf("user does not support factor")
 	}
 
 	code := req.FormValue("code")
