@@ -11,5 +11,5 @@ sqlc: $(SQL_FILES)
 astro:
 	cd web && yarn build
 
-build: sqlc
+build: sqlc astro
 	go build ./cmd/lavender
