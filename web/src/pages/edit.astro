@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Edit">
+<Layout title="Edit Profile">
   <div>Logged in as: [[.User.Name]] ([[.User.Subject]])</div>
   <div>
     <form method="POST" action="/edit">
@@ -22,11 +22,11 @@ import Layout from "../layouts/Layout.astro";
       <div>
         <label for="field_pronouns">Pronouns:</label>
         <select name="pronouns" id="field_pronouns">
-          <option value="they/them" [[ if eq "they/them" .FieldPronoun ]]selected[[ end ]]>They/Them</option>
-          <option value="he/him" [[ if eq "he/him" .FieldPronoun ]]selected[[ end ]]>He/Him</option>
-          <option value="she/her" [[ if eq "she/her" .FieldPronoun ]]selected[[ end ]]>She/Her</option>
-          <option value="it/its" [[ if eq "it/its" .FieldPronoun ]]selected[[ end ]]>It/Its</option>
-          <option value="one/one's" [[ if eq "one/one's" .FieldPronoun ]]selected[[ end ]]>One/One's</option>
+          [[ renderOptionTag "they/them" "They/Them" .FieldPronoun ]]
+          [[ renderOptionTag "he/him" "He/Him" .FieldPronoun ]]
+          [[ renderOptionTag "she/her" "She/Her" .FieldPronoun ]]
+          [[ renderOptionTag "it/its" "It/Its" .FieldPronoun ]]
+          [[ renderOptionTag "one/one's" "One/One's" .FieldPronoun ]]
         </select>
         <label>Reset? <input type="checkbox" name="reset_pronouns"></label>
       </div>

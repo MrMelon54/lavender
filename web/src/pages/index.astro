@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout>
   <div class="center-box sm:max-w-md">
     <div>Logged in as: [[ .Auth.UserInfo.name ]] ([[ .Auth.Subject ]])</div>
     <form method="GET" action="/manage/apps" class="space-y-4 md:space-y-6">
@@ -11,6 +11,19 @@ import Layout from '../layouts/Layout.astro';
     [[ if .IsAdmin ]]
     <form method="GET" action="/manage/users" class="space-y-4 md:space-y-6">
       <button type="submit" class="btn-green">Manage Users</button>
+    </form>
+    [[ end ]]
+    [[ if .OtpEnabled ]]
+    <form method="POST" action="/edit/otp">
+      <input type="hidden" name="remove" value="1"/>
+      <button type="submit">Remove OTP</button>
+    </form>
+    [[ else ]]
+    <form method="POST" action="/edit/otp">
+      <label><input type="radio" name="digits" value="6"/> 6 digits</label>
+      <label><input type="radio" name="digits" value="7"/> 7 digits</label>
+      <label><input type="radio" name="digits" value="8"/> 8 digits</label>
+      <button type="submit">Change OTP</button>
     </form>
     [[ end ]]
     <form method="POST" action="/logout">

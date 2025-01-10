@@ -1,0 +1,49 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <form method="GET" action="/">
+    <button type="submit">Home</button>
+  </form>
+
+  <h2>Edit Client Application</h2>
+  <form method="POST" action="/manage/apps">
+    <input type="hidden" name="action" value="edit"/>
+    <input type="hidden" name="offset" value="[[ .Offset ]]"/>
+    <input type="hidden" name="subject" value="[[ .EditApp.Subject ]]"/>
+    <div>
+      <label>ID: [[ .EditApp.Subject ]]</label>
+    </div>
+    <div>
+      <label for="field_name">Name:</label>
+      <input type="text" name="name" id="field_name" value="[[ .EditApp.Name ]]" required/>
+    </div>
+    <div>
+      <label for="field_domain">Domain:</label>
+      <input type="text" name="domain" id="field_domain" value="[[ .EditApp.Domain ]]" required/>
+    </div>
+    [[ if .IsAdmin ]]
+    <div>
+      <label for="field_perms">Perms:</label>
+      <input type="text" name="perms" id="field_perms" value="[[ .EditApp.Perms ]]" size="100"/>
+    </div>
+    [[ end ]]
+    <div>
+      <label for="field_public">Public: [[ renderCheckboxTag "public" "field_public" .EditApp.Public ]]</label>
+    </div>
+    [[ if .IsAdmin ]]
+    <div>
+      <label for="field_sso">SSO: [[ renderCheckboxTag "sso" "field_sso" .EditApp.Sso ]]</label>
+    </div>
+    [[ end ]]
+    <div>
+      <label for="field_active">Active: [[ renderCheckboxTag "active" "field_active" .EditApp.Active ]]</label>
+    </div>
+    <button type="submit">Edit</button>
+  </form>
+  <form method="GET" action="/manage/apps">
+    <input type="hidden" name="offset" value="[[ .Offset ]]"/>
+    <button type="submit">Cancel</button>
+  </form>
+</Layout>

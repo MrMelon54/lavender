@@ -6,12 +6,12 @@ import (
 	"github.com/1f349/lavender/logger"
 	"github.com/1f349/lavender/utils"
 	"github.com/1f349/overlapfs"
+	"html"
 	"html/template"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -27,10 +27,7 @@ var (
 
 func LoadPages(wd string) error {
 	return loadOnce.Do(func() (err error) {
-		webCombinedDir, err = fs.Sub(webBuild, "dist")
-		if err != nil {
-			return err
-		}
+		webCombinedDir = webBuild
 
 		if wd != "" {
 			webDir := filepath.Join(wd, "web")
@@ -44,21 +41,37 @@ func LoadPages(wd string) error {
 			webCombinedDir = overlapfs.OverlapFS{A: webBuild, B: wdFs}
 		}
 
+		// TODO(melon): figure this out layer
+		webCombinedDir = webBuild
+
 		pageTemplates, err = template.New("web").Delims("[[", "]]").Funcs(template.FuncMap{
-			"emailHide": utils.EmailHide,
-			"renderTitle":
-		}).ParseFS(webCombinedDir, "*/index.html")
+			"emailHide":         utils.EmailHide,
+			"renderOptionTag":   renderOptionTag,
+			"renderCheckboxTag": renderCheckboxTag,
+		}).ParseFS(webCombinedDir, "dist/*.html")
 
 		return err
 	})
 }
 
-func renderTitle(title string, service string) string {
-	
+func renderOptionTag(value, display string, selectedValue string) template.HTML {
+	var selectedParam string
+	if value == selectedValue {
+		selectedParam = " selected"
+	}
+	return template.HTML("<option value=\"" + html.EscapeString(value) + "\"" + selectedParam + ">" + html.EscapeString(display) + "</option>")
+}
+
+func renderCheckboxTag(name, id string, checked bool) template.HTML {
+	var checkedParam string
+	if checked {
+		checkedParam = " checked"
+	}
+	return template.HTML("<input type=\"checkbox\" name=\"" + html.EscapeString(name) + "\" id=\"" + html.EscapeString(id) + "\"" + checkedParam + " />")
 }
 
 func RenderPageTemplate(wr io.Writer, name string, data any) {
-	p := path.Join(name, "index.html")
+	p := name + ".html"
 	err := pageTemplates.ExecuteTemplate(wr, p, data)
 	if err != nil {
 		logger.Logger.Warn("Failed to render page", "name", name, "err", err)
