@@ -8,6 +8,7 @@ import (
 	"github.com/1f349/lavender/conf"
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/logger"
+	"github.com/1f349/lavender/mail"
 	"github.com/1f349/lavender/role"
 	"github.com/1f349/lavender/server"
 	"github.com/1f349/lavender/web"
@@ -96,6 +97,11 @@ func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...interface{})
 	}
 	wd := filepath.Dir(configPathAbs)
 
+	mailSender, err := mail.New(&config.Mail, wd, "")
+	if err != nil {
+		logger.Logger.Fatal("Failed to create mail sender", "err", err)
+	}
+
 	// load the keystore private and public keys
 	keyDir := filepath.Join(wd, "keystore")
 	err = os.MkdirAll(keyDir, 0700)
@@ -131,7 +137,7 @@ func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...interface{})
 	}
 
 	mux := httprouter.New()
-	server.SetupRouter(mux, config, db, signingKey)
+	server.SetupRouter(mux, config, mailSender, db, signingKey)
 	srv := &http.Server{
 		Handler:           mux,
 		ReadTimeout:       time.Minute,

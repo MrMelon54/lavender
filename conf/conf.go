@@ -2,7 +2,7 @@ package conf
 
 import (
 	"github.com/1f349/lavender/issuer"
-	"github.com/1f349/lavender/mail"
+	"github.com/1f349/simplemail"
 )
 
 type Conf struct {
@@ -13,6 +13,6 @@ type Conf struct {
 	Kid         string             `yaml:"kid"`
 	Namespace   string             `yaml:"namespace"`
 	OtpIssuer   string             `yaml:"otpIssuer"`
-	Mail        mail.Mail          `yaml:"mail"`
+	Mail        simplemail.Mail    `yaml:"mail"`
 	SsoServices []issuer.SsoConfig `yaml:"ssoServices"`
 }

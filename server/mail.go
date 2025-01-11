@@ -113,7 +113,7 @@ func (h *httpServer) MailDelete(rw http.ResponseWriter, req *http.Request, param
 		return
 	}
 
-	err = h.conf.Mail.SendEmailTemplate("mail-account-delete", "Account Deletion", userInfo.Name, address, nil)
+	err = h.mailSender.SendEmailTemplate("mail-account-delete", "Account Deletion", userInfo.Name, address, nil)
 	if err != nil {
 		http.Error(rw, "Failed to send confirmation email.", http.StatusInternalServerError)
 		return

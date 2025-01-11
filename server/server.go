@@ -9,6 +9,7 @@ import (
 	"github.com/1f349/lavender/database"
 	"github.com/1f349/lavender/issuer"
 	"github.com/1f349/lavender/logger"
+	"github.com/1f349/lavender/mail"
 	"github.com/1f349/lavender/web"
 	"github.com/1f349/mjwt"
 	"github.com/go-oauth2/oauth2/v4/manage"
@@ -28,6 +29,7 @@ type httpServer struct {
 	db         *database.Queries
 	conf       conf.Conf
 	signingKey *mjwt.Issuer
+	mailSender *mail.Mail
 	manager    *issuer.Manager
 
 	// mailLinkCache contains a mapping of verify uuids to user uuids
@@ -53,7 +55,7 @@ type mailLinkKey struct {
 	data   string
 }
 
-func SetupRouter(r *httprouter.Router, config conf.Conf, db *database.Queries, signingKey *mjwt.Issuer) {
+func SetupRouter(r *httprouter.Router, config conf.Conf, mailSender *mail.Mail, db *database.Queries, signingKey *mjwt.Issuer) {
 	// remove last slash from baseUrl
 	config.BaseUrl = strings.TrimRight(config.BaseUrl, "/")
 
@@ -67,6 +69,7 @@ func SetupRouter(r *httprouter.Router, config conf.Conf, db *database.Queries, s
 		db:         db,
 		conf:       config,
 		signingKey: signingKey,
+		mailSender: mailSender,
 
 		mailLinkCache: cache.New[mailLinkKey, string](),
 
