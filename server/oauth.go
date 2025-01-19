@@ -25,6 +25,9 @@ import (
 	"time"
 )
 
+// TODO(melon): add ldap client, radius client and other login support
+// TODO(melon): add ldap server, radius server support
+
 func SetupOAuth2(r *httprouter.Router, hs *httpServer, key *mjwt.Issuer, db *database.Queries) {
 	oauthManager := manage.NewDefaultManager()
 	oauthManager.MapAuthorizeGenerate(generates.NewAuthorizeGenerate())

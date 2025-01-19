@@ -2,12 +2,13 @@ package conf
 
 import (
 	"github.com/1f349/lavender/issuer"
+	"github.com/1f349/lavender/url"
 	"github.com/1f349/simplemail"
 )
 
 type Conf struct {
 	Listen      string             `yaml:"listen"`
-	BaseUrl     string             `yaml:"baseUrl"`
+	BaseUrl     url.URL            `yaml:"baseUrl"`
 	ServiceName string             `yaml:"serviceName"`
 	Issuer      string             `yaml:"issuer"`
 	Kid         string             `yaml:"kid"`

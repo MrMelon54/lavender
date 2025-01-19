@@ -1,0 +1,12 @@
+---
+export const partial = true;
+---
+
+<form method="POST" action="/login">
+  <input type="hidden" name="redirect" value="[[.Redirect]]"/>
+  <div>
+    <label for="field_email">Email:</label>
+    <input type="email" name="email" id="field_email" value="[[.UserEmail]]" required/>
+  </div>
+  <button type="submit">Login</button>
+</form>

@@ -28,7 +28,7 @@ func New(sender *simplemail.Mail, wd, name string) (*Mail, error) {
 		err := os.Mkdir(mailDir, os.ModePerm)
 		if err == nil || errors.Is(err, os.ErrExist) {
 			wdFs := os.DirFS(mailDir)
-			o = overlapfs.OverlapFS{A: embeddedTemplates, B: wdFs}
+			o = overlapfs.OverlapFS{A: o, B: wdFs}
 		}
 	}
 

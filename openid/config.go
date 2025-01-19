@@ -1,8 +1,6 @@
 package openid
 
-import (
-	"strings"
-)
+import "github.com/1f349/lavender/url"
 
 type Config struct {
 	Issuer                 string   `json:"issuer"`
@@ -16,21 +14,17 @@ type Config struct {
 	JwksUri                string   `json:"jwks_uri"`
 }
 
-func GenConfig(baseUrl string, scopes, claims []string) Config {
-	baseUrlRaw := baseUrl
-	if !strings.HasSuffix(baseUrl, "/") {
-		baseUrl += "/"
-	}
+func GenConfig(baseUrl *url.URL, scopes, claims []string) Config {
 
 	return Config{
-		Issuer:                 baseUrlRaw,
-		AuthorizationEndpoint:  baseUrl + "authorize",
-		TokenEndpoint:          baseUrl + "token",
-		UserInfoEndpoint:       baseUrl + "userinfo",
+		Issuer:                 baseUrl.String(),
+		AuthorizationEndpoint:  baseUrl.Resolve("authorize").String(),
+		TokenEndpoint:          baseUrl.Resolve("token").String(),
+		UserInfoEndpoint:       baseUrl.Resolve("userinfo").String(),
 		ResponseTypesSupported: []string{"code"},
 		ScopesSupported:        scopes,
 		ClaimsSupported:        claims,
 		GrantTypesSupported:    []string{"authorization_code", "refresh_token"},
-		JwksUri:                baseUrl + ".well-known/jwks.json",
+		JwksUri:                baseUrl.Resolve(".well-known/jwks.json").String(),
 	}
 }

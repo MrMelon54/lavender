@@ -1,6 +1,7 @@
 package openid
 
 import (
+	"github.com/1f349/lavender/url"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -16,5 +17,5 @@ func TestGenConfig(t *testing.T) {
 		ClaimsSupported:        []string{"name", "email", "preferred_username"},
 		GrantTypesSupported:    []string{"authorization_code", "refresh_token"},
 		JwksUri:                "https://example.com/.well-known/jwks.json",
-	}, GenConfig("https://example.com", []string{"openid", "email"}, []string{"name", "email", "preferred_username"}))
+	}, GenConfig(url.MustParse("https://example.com"), []string{"openid", "email"}, []string{"name", "email", "preferred_username"}))
 }

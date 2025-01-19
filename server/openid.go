@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"github.com/1f349/lavender/logger"
 	"github.com/1f349/lavender/openid"
+	"github.com/1f349/lavender/url"
 	"github.com/1f349/mjwt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-func SetupOpenId(r *httprouter.Router, baseUrl string, signingKey *mjwt.Issuer) {
+func SetupOpenId(r *httprouter.Router, baseUrl *url.URL, signingKey *mjwt.Issuer) {
 	openIdConf := openid.GenConfig(baseUrl, []string{
 		"openid", "name", "username", "profile", "email", "birthdate", "age", "zoneinfo", "locale",
 	}, []string{

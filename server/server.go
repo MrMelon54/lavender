@@ -35,11 +35,8 @@ type httpServer struct {
 	// mailLinkCache contains a mapping of verify uuids to user uuids
 	mailLinkCache *cache.Cache[mailLinkKey, string]
 
-	authBasic *providers.BasicLogin
-	authOtp   *providers.OtpLogin
-	authOAuth *providers.OAuthLogin
-
 	authSources []auth.Provider
+	authButtons []auth.Button
 }
 
 type mailLink byte
@@ -56,13 +53,26 @@ type mailLinkKey struct {
 }
 
 func SetupRouter(r *httprouter.Router, config conf.Conf, mailSender *mail.Mail, db *database.Queries, signingKey *mjwt.Issuer) {
-	// remove last slash from baseUrl
-	config.BaseUrl = strings.TrimRight(config.BaseUrl, "/")
-
+	// TODO: move auth provider init to main function
+	// TODO: allow dynamically changing the providers based on database information
 	authBasic := &providers.BasicLogin{DB: db}
 	authOtp := &providers.OtpLogin{DB: db}
-	authOAuth := &providers.OAuthLogin{DB: db, BaseUrl: config.BaseUrl}
+	authOAuth := &providers.OAuthLogin{DB: db, BaseUrl: &config.BaseUrl}
 	authOAuth.Init()
+	authPasskey := &providers.PasskeyLogin{DB: db}
+
+	authSources := []auth.Provider{
+		authBasic,
+		authOtp,
+		authOAuth,
+		authPasskey,
+	}
+	authButtons := make([]auth.Button, 0)
+	for _, source := range authSources {
+		if button, isButton := source.(auth.Button); isButton {
+			authButtons = append(authButtons, button)
+		}
+	}
 
 	hs := &httpServer{
 		r:          r,
@@ -73,15 +83,8 @@ func SetupRouter(r *httprouter.Router, config conf.Conf, mailSender *mail.Mail, 
 
 		mailLinkCache: cache.New[mailLinkKey, string](),
 
-		authBasic: authBasic,
-		authOtp:   authOtp,
-		authOAuth: authOAuth,
-		//authPasskey: &auth.PasskeyLogin{DB: db},
-
-		authSources: []auth.Provider{
-			authBasic,
-			authOtp,
-		},
+		authSources: authSources,
+		authButtons: authButtons,
 	}
 
 	var err error
@@ -90,7 +93,7 @@ func SetupRouter(r *httprouter.Router, config conf.Conf, mailSender *mail.Mail, 
 		logger.Logger.Fatal("Failed to load SSO services", "err", err)
 	}
 
-	SetupOpenId(r, config.BaseUrl, signingKey)
+	SetupOpenId(r, &config.BaseUrl, signingKey)
 	r.GET("/", hs.OptionalAuthentication(false, hs.Home))
 	r.POST("/logout", hs.RequireAuthentication(hs.logoutPost))
 

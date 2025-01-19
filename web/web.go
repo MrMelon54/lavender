@@ -18,7 +18,7 @@ import (
 
 var (
 	//go:embed dist
-	webBuild embed.FS
+	webDist embed.FS
 
 	webCombinedDir fs.FS
 	pageTemplates  *template.Template
@@ -27,6 +27,11 @@ var (
 
 func LoadPages(wd string) error {
 	return loadOnce.Do(func() (err error) {
+		webBuild, err := fs.Sub(webDist, "dist")
+		if err != nil {
+			return err
+		}
+
 		webCombinedDir = webBuild
 
 		if wd != "" {
@@ -44,14 +49,37 @@ func LoadPages(wd string) error {
 		// TODO(melon): figure this out layer
 		webCombinedDir = webBuild
 
-		pageTemplates, err = template.New("web").Delims("[[", "]]").Funcs(template.FuncMap{
+		pageTemplates, err = findAndParseTemplates(webCombinedDir, template.FuncMap{
 			"emailHide":         utils.EmailHide,
 			"renderOptionTag":   renderOptionTag,
 			"renderCheckboxTag": renderCheckboxTag,
-		}).ParseFS(webCombinedDir, "dist/*.html")
-
+		})
 		return err
 	})
+}
+
+func findAndParseTemplates(rootDir fs.FS, funcMap template.FuncMap) (*template.Template, error) {
+	root := template.New("")
+
+	err := fs.WalkDir(rootDir, ".", func(p string, d fs.DirEntry, e1 error) error {
+		if d.IsDir() || !strings.HasSuffix(p, ".html") {
+			return nil
+		}
+
+		if e1 != nil {
+			return e1
+		}
+
+		fileContents, err := fs.ReadFile(webCombinedDir, p)
+		if err != nil {
+			return err
+		}
+
+		t := root.New(p).Delims("[[", "]]").Funcs(funcMap)
+		_, err = t.Parse(string(fileContents))
+		return err
+	})
+	return root, err
 }
 
 func renderOptionTag(value, display string, selectedValue string) template.HTML {
@@ -70,12 +98,16 @@ func renderCheckboxTag(name, id string, checked bool) template.HTML {
 	return template.HTML("<input type=\"checkbox\" name=\"" + html.EscapeString(name) + "\" id=\"" + html.EscapeString(id) + "\"" + checkedParam + " />")
 }
 
-func RenderPageTemplate(wr io.Writer, name string, data any) {
+func RenderPageTemplate(wr io.Writer, name string, data any) bool {
+	logger.Logger.Helper()
+
 	p := name + ".html"
 	err := pageTemplates.ExecuteTemplate(wr, p, data)
 	if err != nil {
 		logger.Logger.Warn("Failed to render page", "name", name, "err", err)
 	}
+
+	return err == nil
 }
 
 func RenderWebAsset(rw http.ResponseWriter, req *http.Request, name string) {

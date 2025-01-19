@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/1f349/lavender/auth/authContext"
 	"github.com/1f349/lavender/database"
-	"html/template"
 	"net/http"
 )
 
@@ -38,10 +38,10 @@ type Provider interface {
 	Name() string
 
 	// RenderTemplate returns HTML to embed in the page template.
-	RenderTemplate(ctx context.Context, req *http.Request, user *database.User) (template.HTML, error)
+	RenderTemplate(ctx authContext.TemplateContext) error
 
 	// AttemptLogin processes the login request.
-	AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error
+	AttemptLogin(ctx authContext.TemplateContext) error
 }
 
 type UserSafeError struct {

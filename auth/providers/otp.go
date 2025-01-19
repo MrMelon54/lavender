@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/1f349/lavender/auth"
+	"github.com/1f349/lavender/auth/authContext"
 	"github.com/1f349/lavender/database"
 	"github.com/xlzd/gotp"
-	"html/template"
 	"net/http"
 	"time"
 )
@@ -30,19 +30,8 @@ func (o *OtpLogin) AccessState() auth.State { return auth.StateBasic }
 
 func (o *OtpLogin) Name() string { return "basic" }
 
-func (o *OtpLogin) RenderTemplate(_ context.Context, _ *http.Request, user *database.User) (template.HTML, error) {
-	if user == nil || user.Subject == "" {
-		return "", fmt.Errorf("requires previous factor")
-	}
-	if user.OtpSecret == "" || !isDigitsSupported(user.OtpDigits) {
-		return "", fmt.Errorf("user does not support factor")
-	}
-
-	// no need to provide render data
-	return "<div>OTP login template</div>", nil
-}
-
-func (o *OtpLogin) AttemptLogin(ctx context.Context, req *http.Request, user *database.User) error {
+func (o *OtpLogin) RenderTemplate(ctx authContext.TemplateContext) error {
+	user := ctx.User()
 	if user == nil || user.Subject == "" {
 		return fmt.Errorf("requires previous factor")
 	}
@@ -50,7 +39,25 @@ func (o *OtpLogin) AttemptLogin(ctx context.Context, req *http.Request, user *da
 		return fmt.Errorf("user does not support factor")
 	}
 
-	code := req.FormValue("code")
+	// TODO: is this right?
+	ctx.Render(map[string]any{
+		"Redirect": "/",
+	})
+
+	// no need to provide render data
+	return nil
+}
+
+func (o *OtpLogin) AttemptLogin(ctx authContext.TemplateContext) error {
+	user := ctx.User()
+	if user == nil || user.Subject == "" {
+		return fmt.Errorf("requires previous factor")
+	}
+	if user.OtpSecret == "" || !isDigitsSupported(user.OtpDigits) {
+		return fmt.Errorf("user does not support factor")
+	}
+
+	code := ctx.Request().FormValue("code")
 
 	if !validateTotp(user.OtpSecret, int(user.OtpDigits), code) {
 		return auth.BasicUserSafeError(http.StatusBadRequest, "invalid OTP code")
