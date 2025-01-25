@@ -54,7 +54,11 @@ func (h *httpServer) testAuthSources(req *http.Request, user *database.User, fac
 		if i.AccessState() != factor {
 			continue
 		}
-		err := i.RenderTemplate(authContext.NewTemplateContext(req, user))
+		form, ok := i.(auth.Form)
+		if !ok {
+			continue
+		}
+		err := form.RenderTemplate(authContext.NewTemplateContext(req, user))
 		authSource[i.Name()] = err == nil
 		clear(data)
 	}
@@ -70,7 +74,7 @@ func (h *httpServer) getAuthWithState(state auth.State) auth.Provider {
 	return nil
 }
 
-func (h *httpServer) renderAuthTemplate(req *http.Request, provider auth.Provider) (template.HTML, error) {
+func (h *httpServer) renderAuthTemplate(req *http.Request, provider auth.Form) (template.HTML, error) {
 	tmpCtx := authContext.NewTemplateContext(req, new(database.User))
 
 	err := provider.RenderTemplate(tmpCtx)
@@ -119,9 +123,18 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 		return
 	}
 
-	buttonTemplates := make([]template.HTML, len(h.authButtons))
+	buttonCtx := authContext.NewTemplateContext(req, new(database.User))
+
+	buttonTemplates := make([]template.HTML, 0, len(h.authButtons))
 	for i := range h.authButtons {
-		buttonTemplates[i] = h.authButtons[i].RenderButtonTemplate(req.Context(), req)
+		h.authButtons[i].RenderButtonTemplate(buttonCtx)
+		if buttonCtx.Data() != nil {
+			// TODO: finish the buttons here
+			buf := new(bytes.Buffer)
+			web.RenderPageTemplate(buf, "auth-buttons/"+h.authButtons[i].Name(), buttonCtx.Data())
+			buttonTemplates = append(buttonTemplates, template.HTML(buf.String()))
+			buttonCtx.Render(nil)
+		}
 	}
 
 	type loginError struct {
@@ -133,8 +146,9 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 	provider := h.getAuthWithState(auth.StateUnauthorized)
 
 	// Maybe the admin has disabled some login providers but does have a button based provider available?
-	if provider != nil {
-		renderTemplate, err = h.renderAuthTemplate(req, provider)
+	form, ok := provider.(auth.Form)
+	if provider != nil && ok {
+		renderTemplate, err = h.renderAuthTemplate(req, form)
 		if err != nil {
 			logger.Logger.Warn("No provider for login")
 			web.RenderPageTemplate(rw, "login-error", loginError{Error: "No available provider for login"})

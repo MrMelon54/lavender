@@ -10,22 +10,25 @@ import (
 	"net/http"
 )
 
-type basicLoginDB interface {
+type passwordLoginDB interface {
 	auth.LookupUserDB
 	CheckLogin(ctx context.Context, un, pw string) (database.CheckLoginResult, error)
 }
 
-var _ auth.Provider = (*BasicLogin)(nil)
+var (
+	_ auth.Provider = (*PasswordLogin)(nil)
+	_ auth.Form     = (*PasswordLogin)(nil)
+)
 
-type BasicLogin struct {
-	DB basicLoginDB
+type PasswordLogin struct {
+	DB passwordLoginDB
 }
 
-func (b *BasicLogin) AccessState() auth.State { return auth.StateUnauthorized }
+func (b *PasswordLogin) AccessState() auth.State { return auth.StateBase }
 
-func (b *BasicLogin) Name() string { return "basic" }
+func (b *PasswordLogin) Name() string { return "password" }
 
-func (b *BasicLogin) RenderTemplate(ctx authContext.TemplateContext) error {
+func (b *PasswordLogin) RenderTemplate(ctx authContext.TemplateContext) error {
 	// TODO(melon): rewrite this
 	req := ctx.Request()
 	un := req.FormValue("login")
@@ -43,7 +46,7 @@ func (b *BasicLogin) RenderTemplate(ctx authContext.TemplateContext) error {
 	return nil
 }
 
-func (b *BasicLogin) AttemptLogin(ctx authContext.TemplateContext) error {
+func (b *PasswordLogin) AttemptLogin(ctx authContext.FormContext) error {
 	req := ctx.Request()
 	un := req.FormValue("username")
 	pw := req.FormValue("password")

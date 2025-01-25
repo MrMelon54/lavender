@@ -2,11 +2,7 @@ package auth
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"github.com/1f349/lavender/auth/authContext"
 	"github.com/1f349/lavender/database"
-	"net/http"
 )
 
 // State defines the currently reached authentication state
@@ -15,6 +11,9 @@ type State byte
 const (
 	// StateUnauthorized defines the "unauthorized" state of a session
 	StateUnauthorized State = iota
+	// StateBase defines the "username" only user state
+	// This state is for providing a username to allow redirecting to oauth clients
+	StateBase
 	// StateBasic defines the "username and password with no OTP" user state
 	// This is skipped if OTP/passkey is optional and not enabled for the user
 	StateBasic
@@ -36,53 +35,6 @@ type Provider interface {
 
 	// Name defines a string value for the provider.
 	Name() string
-
-	// RenderTemplate returns HTML to embed in the page template.
-	RenderTemplate(ctx authContext.TemplateContext) error
-
-	// AttemptLogin processes the login request.
-	AttemptLogin(ctx authContext.TemplateContext) error
-}
-
-type UserSafeError struct {
-	Display  string
-	Code     int
-	Internal error
-}
-
-func (e UserSafeError) Error() string {
-	return fmt.Sprintf("%s [%d]: %v", e.Display, e.Code, e.Internal)
-}
-
-func (e UserSafeError) Unwrap() error {
-	return e.Internal
-}
-
-func BasicUserSafeError(code int, message string) UserSafeError {
-	return UserSafeError{
-		Code:     code,
-		Display:  message,
-		Internal: errors.New(message),
-	}
-}
-
-func AdminSafeError(inner error) UserSafeError {
-	return UserSafeError{
-		Code:     http.StatusInternalServerError,
-		Display:  "Internal server error",
-		Internal: inner,
-	}
-}
-
-type RedirectError struct {
-	Target string
-	Code   int
-}
-
-func (e RedirectError) TargetUrl() string { return e.Target }
-
-func (e RedirectError) Error() string {
-	return fmt.Sprintf("redirect to '%s'", e.Target)
 }
 
 type LookupUserDB interface {

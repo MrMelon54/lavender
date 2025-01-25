@@ -47,13 +47,7 @@ func (o OAuthLogin) AccessState() auth.State { return auth.StateUnauthorized }
 
 func (o OAuthLogin) Name() string { return "oauth" }
 
-func (o OAuthLogin) RenderTemplate(ctx authContext.TemplateContext) error {
-	// TODO: does this need to exist?
-	ctx.Render(map[string]any{"Error": "no"})
-	return nil
-}
-
-func (o OAuthLogin) AttemptLogin(ctx authContext.TemplateContext) error {
+func (o OAuthLogin) AttemptLogin(ctx authContext.FormContext) error {
 	rCtx := ctx.Context()
 
 	login, ok := rCtx.Value(oauthServiceLogin(0)).(*issuer.WellKnownOIDC)

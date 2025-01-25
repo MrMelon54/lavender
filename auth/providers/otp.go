@@ -30,7 +30,7 @@ func (o *OtpLogin) AccessState() auth.State { return auth.StateBasic }
 
 func (o *OtpLogin) Name() string { return "basic" }
 
-func (o *OtpLogin) RenderTemplate(ctx authContext.TemplateContext) error {
+func (o *OtpLogin) RenderTemplate(ctx authContext.FormContext) error {
 	user := ctx.User()
 	if user == nil || user.Subject == "" {
 		return fmt.Errorf("requires previous factor")
@@ -48,7 +48,7 @@ func (o *OtpLogin) RenderTemplate(ctx authContext.TemplateContext) error {
 	return nil
 }
 
-func (o *OtpLogin) AttemptLogin(ctx authContext.TemplateContext) error {
+func (o *OtpLogin) AttemptLogin(ctx authContext.FormContext) error {
 	user := ctx.User()
 	if user == nil || user.Subject == "" {
 		return fmt.Errorf("requires previous factor")

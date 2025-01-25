@@ -55,7 +55,7 @@ type mailLinkKey struct {
 func SetupRouter(r *httprouter.Router, config conf.Conf, mailSender *mail.Mail, db *database.Queries, signingKey *mjwt.Issuer) {
 	// TODO: move auth provider init to main function
 	// TODO: allow dynamically changing the providers based on database information
-	authBasic := &providers.BasicLogin{DB: db}
+	authBasic := &providers.PasswordLogin{DB: db}
 	authOtp := &providers.OtpLogin{DB: db}
 	authOAuth := &providers.OAuthLogin{DB: db, BaseUrl: &config.BaseUrl}
 	authOAuth.Init()
