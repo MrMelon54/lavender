@@ -91,6 +91,8 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 		return
 	}
 
+	// TODO: some of this should be more like tulip
+
 	cookie, err := req.Cookie("lavender-login-name")
 	if err == nil && cookie.Valid() == nil {
 		user, err := h.db.GetUser(req.Context(), userAuth.Subject)
@@ -157,6 +159,8 @@ func (h *httpServer) loginPost(rw http.ResponseWriter, req *http.Request, _ http
 		h.SafeRedirect(rw, req)
 		return
 	}
+
+	// TODO: some of this should be more like tulip
 
 	if req.PostFormValue("not-you") == "1" {
 		http.SetCookie(rw, &http.Cookie{
