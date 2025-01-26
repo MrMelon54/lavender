@@ -11,7 +11,6 @@ import (
 	"github.com/1f349/lavender/url"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
-	"html/template"
 	"net/http"
 	"time"
 )
@@ -101,11 +100,16 @@ func (o OAuthLogin) OAuthCallback(rw http.ResponseWriter, req *http.Request, inf
 	redirect(rw, req)
 }
 
-func (o OAuthLogin) ButtonName() string { return o.Name() }
-
-func (o OAuthLogin) RenderButtonTemplate(ctx context.Context, req *http.Request) template.HTML {
+func (o OAuthLogin) RenderButtonTemplate(ctx authContext.TemplateContext) {
 	// o.authUrlBase("button")
-	return "<div>OAuth Login Template</div>"
+	// provide something non-nil
+	ctx.Render(struct {
+		Href       string
+		ButtonName string
+	}{
+		Href:       o.authUrlBase("button").String(),
+		ButtonName: "Login with Unknown OAuth Button", // TODO: actually get the service name
+	})
 }
 
 type oauthServiceLogin int
