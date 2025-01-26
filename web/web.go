@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	//go:embed dist
+	//go:embed all:dist
 	webDist embed.FS
 
 	webCombinedDir fs.FS

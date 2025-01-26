@@ -17,6 +17,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 )
 
@@ -98,13 +99,13 @@ func SetupRouter(r *httprouter.Router, config conf.Conf, mailSender *mail.Mail, 
 	r.POST("/logout", hs.RequireAuthentication(hs.logoutPost))
 
 	// theme styles
-	r.GET("/assets/*filepath", func(rw http.ResponseWriter, req *http.Request, params httprouter.Params) {
+	r.GET("/_astro/*filepath", func(rw http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		name := params.ByName("filepath")
 		if strings.Contains(name, "..") {
 			http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		web.RenderWebAsset(rw, req, name)
+		web.RenderWebAsset(rw, req, path.Join("_astro", name))
 	})
 
 	// login steps
