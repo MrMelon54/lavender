@@ -46,25 +46,6 @@ func getUserLoginName(req *http.Request) string {
 	return originUrl.Query().Get("login_name")
 }
 
-func (h *httpServer) testAuthSources(req *http.Request, user *database.User, factor auth.State) map[string]bool {
-	authSource := make(map[string]bool)
-	data := make(map[string]any)
-	for _, i := range h.authSources {
-		// ignore not-supported factors
-		if i.AccessState() != factor {
-			continue
-		}
-		form, ok := i.(auth.Form)
-		if !ok {
-			continue
-		}
-		err := form.RenderTemplate(authContext.NewTemplateContext(req, user))
-		authSource[i.Name()] = err == nil
-		clear(data)
-	}
-	return authSource
-}
-
 func (h *httpServer) getAuthWithState(state auth.State) auth.Provider {
 	for _, i := range h.authSources {
 		if i.AccessState() == state {
@@ -111,14 +92,11 @@ func (h *httpServer) loginGet(rw http.ResponseWriter, req *http.Request, _ httpr
 			return
 		}
 
-		fmt.Printf("%#v\n", h.testAuthSources(req, userPtr, auth.StateBasic))
-
 		web.RenderPageTemplate(rw, "login-memory", map[string]any{
 			"ServiceName": h.conf.ServiceName,
 			"LoginName":   cookie.Value,
 			"Redirect":    req.URL.Query().Get("redirect"),
 			"Source":      "start",
-			"Auth":        h.testAuthSources(req, userPtr, auth.StateBasic),
 		})
 		return
 	}
